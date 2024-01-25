@@ -17,12 +17,16 @@
     <button id="stopButton">Testi Durdur</button>
 
     <script>
-        let mediaRecorder;
+        let audioContext;
+        let mediaStream;
         let microphoneId;
 
         async function requestPermissions() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                mediaStream = audioContext.createMediaStreamSource(stream);
 
                 // Mikrofon izinleri alındıktan sonra mikrofonları listele
                 await getDevices();
@@ -59,29 +63,17 @@
                 return;
             }
 
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: selectedMicrophoneId } });
-            mediaRecorder = new MediaRecorder(stream);
-
-            mediaRecorder.ondataavailable = function(e) {
-                if (e.data.size > 0) {
-                    const audioBlob = new Blob([e.data], { type: 'audio/wav' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-
-                    const audioElement = new Audio(audioUrl);
-                    audioElement.play();
-                }
-            };
-
-            mediaRecorder.start();
+            // Seçilen mikrofonu kullanarak sesi geri ver
+            const selectedStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: selectedMicrophoneId } });
+            mediaStream = audioContext.createMediaStreamSource(selectedStream);
+            mediaStream.connect(audioContext.destination);
         });
 
         // Testi Durdur butonuna basıldığında
         document.getElementById('stopButton').addEventListener('click', () => {
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-            }
+            // Ses geri verimini durdur
+            mediaStream.disconnect(audioContext.destination);
         });
     </script>
 </body>
 </html>
-
