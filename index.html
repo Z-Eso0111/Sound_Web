@@ -8,6 +8,11 @@
 <body>
     <h1>Ses Testi</h1>
 
+    <label for="microphone">Mikrofon Seç:</label>
+    <select id="microphone"></select>
+
+    <br><br>
+
     <button id="startButton">Testi Başlat</button>
     <button id="stopButton">Testi Durdur</button>
 
@@ -29,7 +34,6 @@
         async function getDevices() {
             const devices = await navigator.mediaDevices.enumerateDevices();
             const microphoneSelect = document.getElementById('microphone');
-            const speakerSelect = document.getElementById('speaker');
 
             devices.forEach(device => {
                 const option = document.createElement('option');
@@ -38,8 +42,6 @@
 
                 if (device.kind === 'audioinput') {
                     microphoneSelect.add(option);
-                } else if (device.kind === 'audiooutput') {
-                    speakerSelect.add(option);
                 }
             });
         }
@@ -82,4 +84,3 @@
     </script>
 </body>
 </html>
-
