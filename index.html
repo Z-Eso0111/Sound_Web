@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ses Testi</title>
+</head>
+<body>
+    <h1>Ses Testi</h1>
+
+    <label for="microphone">Mikrofon Seç:</label>
+    <select id="microphone"></select>
+
+    <label for="speaker">Hoparlör Seç:</label>
+    <select id="speaker"></select>
+
+    <br><br>
+
+    <button id="startButton" onclick="startListening()">Testi Başlat</button>
+    <button id="stopButton" onclick="stopListening()">Testi Durdur</button>
+
+    <script>
+        // Mikrofon ve hoparlör seçeneklerini getir
+        async function getDevices() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const microphoneSelect = document.getElementById('microphone');
+            const speakerSelect = document.getElementById('speaker');
+
+            devices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label;
+
+                if (device.kind === 'audioinput') {
+                    microphoneSelect.add(option);
+                } else if (device.kind === 'audiooutput') {
+                    speakerSelect.add(option);
+                }
+            });
+        }
+
+        // Sayfa yüklendiğinde cihazları getir
+        window.addEventListener('DOMContentLoaded', getDevices);
+
+        let mediaRecorder;
+        let microphoneId;
+
+        // Mikrofon dinlemeyi başlat
+        async function startListening() {
+            const microphoneSelect = document.getElementById('microphone');
+            const selectedMicrophoneId = microphoneSelect.value;
+
+            if (!selectedMicrophoneId) {
+                alert('Lütfen bir mikrofon seçin.');
+                return;
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: selectedMicrophoneId } });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = function(e) {
+                if (e.data.size > 0) {
+                    const audioBlob = new Blob([e.data], { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    const audioElement = new Audio(audioUrl);
+                    audioElement.play();
+                }
+            };
+
+            mediaRecorder.start();
+        }
+
+        // Mikrofon dinlemeyi durdur
+        function stopListening() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+        }
+    </script>
+</body>
+</html>
