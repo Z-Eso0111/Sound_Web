@@ -8,19 +8,24 @@
 <body>
     <h1>Ses Testi</h1>
 
-    <label for="microphone">Mikrofon Seç:</label>
-    <select id="microphone"></select>
-
-    <label for="speaker">Hoparlör Seç:</label>
-    <select id="speaker"></select>
-
-    <br><br>
-
-    <button id="startButton" onclick="startListening()">Testi Başlat</button>
-    <button id="stopButton" onclick="stopListening()">Testi Durdur</button>
+    <button id="startButton">Testi Başlat</button>
+    <button id="stopButton">Testi Durdur</button>
 
     <script>
-        // Mikrofon ve hoparlör seçeneklerini getir
+        let mediaRecorder;
+        let microphoneId;
+
+        async function requestPermissions() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // Mikrofon izinleri alındıktan sonra mikrofonları listele
+                await getDevices();
+            } catch (error) {
+                console.error('Mikrofon izinleri alınamadı: ', error);
+            }
+        }
+
         async function getDevices() {
             const devices = await navigator.mediaDevices.enumerateDevices();
             const microphoneSelect = document.getElementById('microphone');
@@ -39,14 +44,11 @@
             });
         }
 
-        // Sayfa yüklendiğinde cihazları getir
-        window.addEventListener('DOMContentLoaded', getDevices);
+        // Sayfa yüklendiğinde izinleri iste
+        window.addEventListener('DOMContentLoaded', requestPermissions);
 
-        let mediaRecorder;
-        let microphoneId;
-
-        // Mikrofon dinlemeyi başlat
-        async function startListening() {
+        // Testi Başlat butonuna basıldığında
+        document.getElementById('startButton').addEventListener('click', async () => {
             const microphoneSelect = document.getElementById('microphone');
             const selectedMicrophoneId = microphoneSelect.value;
 
@@ -69,14 +71,14 @@
             };
 
             mediaRecorder.start();
-        }
+        });
 
-        // Mikrofon dinlemeyi durdur
-        function stopListening() {
+        // Testi Durdur butonuna basıldığında
+        document.getElementById('stopButton').addEventListener('click', () => {
             if (mediaRecorder && mediaRecorder.state === 'recording') {
                 mediaRecorder.stop();
             }
-        }
+        });
     </script>
 </body>
 </html>
